@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import { StationApiRaw, Station } from './types';
 import { curateData } from './curateData'; 
 import { manualData } from './manualData';
+import { filterStationsWithWorkingStreams } from './validateStreams';
 
 async function runFullPipeline() {
   console.log('🚀 Starting full station curation process...');
@@ -17,7 +18,8 @@ async function runFullPipeline() {
 
   // 3. Curate
   const curated: Station[] = rawData.map(curateData);     
-  const finalList: Station[] = [...manualData, ...curated];
+  const combinedList: Station[] = [...manualData, ...curated];
+  const finalList = await filterStationsWithWorkingStreams(combinedList);
  
   // 4. Save curated list 
   await fs.writeFile('output/stations.json', JSON.stringify(finalList, null, 2), 'utf-8');
