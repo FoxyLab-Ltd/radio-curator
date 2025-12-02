@@ -17,7 +17,7 @@ export function curateData(raw: StationApiRaw): Station {
     name: raw.name,
     streamUrl: raw.url_resolved,
     homepage: raw.homepage,
-    favicon: raw.favicon || 'https://your-default-icon.url/favicon.png',
+    favicon: raw.favicon || null,
     tags: splitAndTrim(raw.tags),
     codec: raw.codec,
     isCustom: false,
