@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import { StationApiRaw, Station } from './types';
 import { curateData } from './curateData';
 import { filterStationsWithWorkingStreams } from './validateStreams';
+import { deduplicateStations } from './deduplicateStations';
 
 async function buildFinalList() {
   try {
@@ -10,9 +11,10 @@ async function buildFinalList() {
 
     const curated: Station[] = rawData.map(curateData);
     const workingStations = await filterStationsWithWorkingStreams(curated);
+    const deduplicated = deduplicateStations(workingStations);
 
-    await fs.writeFile('output/stations.json', JSON.stringify(workingStations, null, 2), 'utf-8');
-    console.log(`✅ Saved ${workingStations.length} curated stations to output/stations.json`);
+    await fs.writeFile('output/stations.json', JSON.stringify(deduplicated, null, 2), 'utf-8');
+    console.log(`✅ Saved ${deduplicated.length} curated stations to output/stations.json`);
   } catch (err) {
     console.error('❌ Failed to build final station list:', err);
   }

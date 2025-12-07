@@ -5,6 +5,7 @@ import { StationApiRaw, Station } from './types';
 import { curateData } from './curateData'; 
 import { manualData } from './manualData';
 import { filterStationsWithWorkingStreams } from './validateStreams';
+import { deduplicateStations } from './deduplicateStations';
 
 async function runFullPipeline() {
   console.log('🚀 Starting full station curation process...');
@@ -19,11 +20,14 @@ async function runFullPipeline() {
   // 3. Curate
   const curated: Station[] = rawData.map(curateData);     
   const combinedList: Station[] = [...manualData, ...curated];
-  const finalList = await filterStationsWithWorkingStreams(combinedList);
+  const workingStations = await filterStationsWithWorkingStreams(combinedList);
+  
+  // 4. Deduplicate stations with same stream URL
+  const finalList = deduplicateStations(workingStations);
  
-  // 4. Save curated list 
+  // 5. Save curated list 
   await fs.writeFile('output/stations.json', JSON.stringify(finalList, null, 2), 'utf-8');
-  console.log(`✅ Curated ${curated.length} stations → output/stations.json`);
+  console.log(`✅ Curated ${finalList.length} stations → output/stations.json`);
 }
 
 runFullPipeline().catch((err) => {
